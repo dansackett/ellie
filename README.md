@@ -1,25 +1,12 @@
 # Ellie
 
-A distributed task queue written in Go (like Celery).
+A distributed task queue written in Go.
 
 This is my first real Go program so I'm using it to learn. Hopefully it turns into something cool.
 
-It requires ZMQ >= 4.2.
-
 ## Getting Started
 
-Ellie uses ZeroMQ as a broker handling network sockets. To work with this
-project, you will need ZeroMQ with a version >= 4.2. We can get this on Ubuntu
-here:
-
-```
-$ add-apt-repository ppa:chris-lea/zeromq
-$ apt-get update
-$ apt-get install zeromq-bin libzmq-dev libzmq0
-```
-
-Once we have that, we can grab the project for your own project using `go
-get`:
+Grab the project for your own project using `go get`:
 
 ```
 $ go get github.com/dansackett/ellie
@@ -27,6 +14,14 @@ $ go get github.com/dansackett/ellie
 
 You're good to go!
 
-## Working With This Project
+# TODO
 
-Flesh out how the API works basically.
+- [X] Use a queue to store tasks so task pulling can be done in order
+- [X] Add functions to enqueue a task at different times and durations
+- [X] Add function to dequeue a task from running
+- [ ] Add ability to set config options
+- [ ] Add proper error handling
+- [ ] Use base config as place to hold communicate channels and other vars
+- [ ] Add ability to set a function for the work to be done
+- [ ] Add ability to expect any input for args
+- [ ] Add Redis as a backend to store tasks
