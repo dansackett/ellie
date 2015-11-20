@@ -105,16 +105,20 @@ type Task struct {
 	nextRun  time.Time
 	interval time.Duration
 	repeat   bool
+	fn       interface{}
+	args     []interface{}
 }
 
 // newTask is an internal function to create a basic new task object.
-func newTask() *Task {
+func newTask(fn interface{}, args ...interface{}) *Task {
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	task := &Task{
 		id:     random.Intn(10000),
 		hash:   uuid.NewV4(),
 		repeat: false,
+		fn:     fn,
+		args:   args,
 	}
 
 	return task
@@ -138,8 +142,8 @@ func Dequeue(hash uuid.UUID) {
 }
 
 // Enqueue schedules a task to run as soon as the next worker is available.
-func Enqueue() uuid.UUID {
-	task := newTask()
+func Enqueue(fn interface{}, args ...interface{}) uuid.UUID {
+	task := newTask(fn, args...)
 	task.nextRun = time.Now()
 	go enqueue(task)
 	return task.hash
@@ -147,16 +151,16 @@ func Enqueue() uuid.UUID {
 
 // EnqueueIn schedules a task to run a certain amount of time from the current
 // time. This allows us to schedule tasks to run in intervals.
-func EnqueueIn(period time.Duration) uuid.UUID {
-	task := newTask()
+func EnqueueIn(period time.Duration, fn interface{}, args ...interface{}) uuid.UUID {
+	task := newTask(fn, args...)
 	task.nextRun = time.Now().Add(period)
 	go enqueue(task)
 	return task.hash
 }
 
 // EnqueueAt schedules a task to run at a certain time in the future.
-func EnqueueAt(period time.Time) uuid.UUID {
-	task := newTask()
+func EnqueueAt(period time.Time, fn interface{}, args ...interface{}) uuid.UUID {
+	task := newTask(fn, args...)
 	task.nextRun = period
 	go enqueue(task)
 	return task.hash
@@ -164,8 +168,8 @@ func EnqueueAt(period time.Time) uuid.UUID {
 
 // EnqueueEvery schedules a task to run and reschedule itself on a regular
 // interval. It works like EnqueueIn but repeats
-func EnqueueEvery(period time.Duration) uuid.UUID {
-	task := newTask()
+func EnqueueEvery(period time.Duration, fn interface{}, args ...interface{}) uuid.UUID {
+	task := newTask(fn, args...)
 	task.nextRun = time.Now().Add(period)
 	task.interval = period
 	task.repeat = true

@@ -19,9 +19,9 @@ You're good to go!
 - [X] Use a queue to store tasks so task pulling can be done in order
 - [X] Add functions to enqueue a task at different times and durations
 - [X] Add function to dequeue a task from running
+- [X] Add ability to set a function for the work to be done
+- [X] Add ability to expect any input for args
 - [ ] Add ability to set config options
 - [ ] Add proper error handling
-- [ ] Use base config as place to hold communicate channels and other vars
-- [ ] Add ability to set a function for the work to be done
-- [ ] Add ability to expect any input for args
+- [ ] Use base config as place to hold channels and other vars
 - [ ] Add Redis as a backend to store tasks

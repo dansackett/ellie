@@ -1,7 +1,8 @@
 package ellie
 
 import (
-	"math/rand"
+	"fmt"
+	"reflect"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -37,10 +38,25 @@ func SpawnWorkers() {
 // Process takes a task and does the work on it.
 func (w *Worker) Process(t *Task) {
 	LogTaskStarted(w, t)
-	time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+
+	fn := reflect.ValueOf(t.fn)
+	fnType := fn.Type()
+	if fnType.Kind() != reflect.Func && fnType.NumIn() != len(t.args) {
+		panic("Expected a function")
+	}
+
+	var args []reflect.Value
+	for _, arg := range t.args {
+		args = append(args, reflect.ValueOf(arg))
+	}
+
+	res := fn.Call(args)
+	for _, val := range res {
+		fmt.Println("Response:", val.Interface())
+	}
 
 	if t.repeat {
-		EnqueueEvery(t.interval)
+		EnqueueEvery(t.interval, t.fn, t.args)
 	}
 
 	w.complete <- t
