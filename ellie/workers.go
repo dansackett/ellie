@@ -30,7 +30,7 @@ func SpawnWorkers() {
 			tasks:    Tasks,
 		}
 
-		worker.Start()
+		go worker.Start()
 		LogWorkerStarted(worker)
 	}
 }
@@ -77,24 +77,22 @@ func (w *Worker) Sleep() {
 // again. If the worker doesn't find anything within 100 milliseconds, it
 // sends the worker into sleep mode for the set interval.
 func (w *Worker) Start() {
-	go func() {
-		for {
-			select {
-			case <-NewTasksQueue:
-				if w.tasks.Len() > 0 {
-					task := w.tasks.Pop()
-					if ok := TasksDequeue.Get(task.hash); ok {
-						LogTaskDequeued(task)
-						TasksDequeue.Remove(task.hash)
-					} else if time.Since(task.nextRun) > 0 {
-						w.Process(task)
-					} else {
-						w.tasks.Push(task)
-					}
+	for {
+		select {
+		case <-NewTasksQueue:
+			if w.tasks.Len() > 0 {
+				task := w.tasks.Pop()
+				if ok := TasksDequeue.Get(task.hash); ok {
+					LogTaskDequeued(task)
+					TasksDequeue.Remove(task.hash)
+				} else if time.Since(task.nextRun) > 0 {
+					w.Process(task)
+				} else {
+					w.tasks.Push(task)
 				}
-			case <-time.After(100 * time.Millisecond):
-				w.Sleep()
 			}
+		case <-time.After(100 * time.Millisecond):
+			w.Sleep()
 		}
-	}()
+	}
 }
