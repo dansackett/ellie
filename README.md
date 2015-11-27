@@ -4,6 +4,8 @@ A distributed task queue written in Go.
 
 This is my first real Go program so I'm using it to learn. Hopefully it turns into something cool.
 
+**NOTICE:** Development has moved to https://github.com/OrlandoGolang/ellie
+
 ## Getting Started
 
 Grab the project for your own project using `go get`:
