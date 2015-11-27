@@ -2,28 +2,49 @@
 
 A distributed task queue written in Go.
 
-This is my first real Go program so I'm using it to learn. Hopefully it turns into something cool.
-
-**NOTICE:** Development has moved to https://github.com/OrlandoGolang/ellie
-
-## Getting Started
+## Installation
 
 Grab the project for your own project using `go get`:
 
 ```
-$ go get github.com/dansackett/ellie
+$ go get github.com/OrlandoGolang/ellie
 ```
 
-You're good to go!
+## Examples
 
-# TODO
+```
+package main
 
-- [X] Use a queue to store tasks so task pulling can be done in order
-- [X] Add functions to enqueue a task at different times and durations
-- [X] Add function to dequeue a task from running
-- [X] Add ability to set a function for the work to be done
-- [X] Add ability to expect any input for args
-- [ ] Add ability to set config options
-- [ ] Add proper error handling
-- [ ] Use base config as place to hold channels and other vars
-- [ ] Add Redis as a backend to store tasks
+import (
+	"time"
+
+	"github.com/OrlandoGolang/ellie"
+)
+
+func Sum(x, y int) int {
+    return x + y
+}
+
+func main() {
+	// Enqueue a task to run now
+	ellie.Enqueue(Sum, 3, 4)
+
+	// Enqueue a task to run in 30 seconds
+	ellie.EnqueueIn(30*time.Second, Sum, 3, 4)
+
+	// Enqueue a task to run in 2 minutes
+	ellie.EnqueueAt(time.Now().Add(2*time.Minute), Sum, 3, 4)
+
+	// Enqueue a task to run every minute and a half
+	ellie.EnqueueEvery((1*time.Minute)+(30*time.Second), Sum, 3, 4)
+
+	// Enqueue a task to run that we intend to cancel
+	cancelHash := ellie.EnqueueIn(5*time.Minute, Sum, 3, 4)
+
+	// Dequeue a task from running
+	ellie.Dequeue(cancelHash)
+
+	// Start the workers and watch for new tasks
+	ellie.RunServer()
+}
+```
