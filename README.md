@@ -26,6 +26,9 @@ func Sum(x, y int) int {
 }
 
 func main() {
+	// Configure the application to run 10 workers with 5 seconds of sleep between each run.
+	ellie.Configure(10, 5)
+
 	// Enqueue a task to run now
 	ellie.Enqueue(Sum, 3, 4)
 

@@ -21,13 +21,13 @@ type Worker struct {
 // SpawnWorkers creates the number of workers in the config and starts them as
 // goroutines listening for jobs to pick up.
 func SpawnWorkers() {
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < AppConfig.NumWorkers; i++ {
 		worker := &Worker{
 			id:       i,
 			hash:     uuid.NewV4(),
-			workers:  WorkerQueue,
-			complete: FinishedQueue,
-			tasks:    Tasks,
+			tasks:    AppConfig.ScheduledTasks,
+			workers:  AppConfig.WorkerPool,
+			complete: AppConfig.FinishedTasks,
 		}
 
 		go worker.Start()
@@ -65,8 +65,8 @@ func (w *Worker) Process(t *Task) {
 
 // Sleep pauses the worker before its next run
 func (w *Worker) Sleep() {
-	LogWorkerSleeping(w, workInterval)
-	time.Sleep(time.Duration(workInterval) * time.Second)
+	LogWorkerSleeping(w)
+	time.Sleep(time.Duration(AppConfig.WorkInterval) * time.Second)
 	w.workers <- w
 }
 
@@ -79,12 +79,12 @@ func (w *Worker) Sleep() {
 func (w *Worker) Start() {
 	for {
 		select {
-		case <-NewTasksQueue:
+		case <-AppConfig.NewTasks:
 			if w.tasks.Len() > 0 {
 				task := w.tasks.Pop()
-				if ok := TasksDequeue.Get(task.hash); ok {
+				if ok := AppConfig.CancelledTasks.Get(task.hash); ok {
 					LogTaskDequeued(task)
-					TasksDequeue.Remove(task.hash)
+					AppConfig.CancelledTasks.Remove(task.hash)
 				} else if time.Since(task.nextRun) > 0 {
 					w.Process(task)
 				} else {
