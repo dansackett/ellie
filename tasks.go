@@ -86,7 +86,7 @@ func (q *TaskQueue) Push(t *Task) {
 
 	q.Tasks.PushFront(t)
 
-	NewTasksQueue <- true
+	AppConfig.NewTasks <- true
 }
 
 // Pop grabs the last task from the TaskQueue
@@ -127,14 +127,14 @@ func newTask(fn interface{}, args ...interface{}) *Task {
 // enqueue is an internal function used to asynchronously push a task onto the
 // queue and log the state to the terminal.
 func enqueue(task *Task) {
-	Tasks.Push(task)
+	AppConfig.ScheduledTasks.Push(task)
 	LogTaskScheduled(task)
 }
 
 // Enqueue schedules a task to run as soon as the next worker is available.
 func Dequeue(hash uuid.UUID) {
 	go func() {
-		if _, err := TasksDequeue.Push(hash); err != nil {
+		if _, err := AppConfig.CancelledTasks.Push(hash); err != nil {
 			// @TODO handle this properly
 			panic(err)
 		}

@@ -10,7 +10,7 @@ import (
 var (
 	// Worker Channels
 	WorkerStarted  = make(chan *Worker)
-	WorkerSleeping = make(chan map[*Worker]int)
+	WorkerSleeping = make(chan *Worker)
 
 	// Task Channels
 	TaskScheduled = make(chan *Task)
@@ -23,42 +23,38 @@ var (
 // application. New state is passed via channels outputting logs from anywhere
 // in the application.
 func StateMonitor() {
-	go func() {
-		for {
-			select {
-			case worker := <-WorkerStarted:
-				color.Set(color.Bold, color.FgBlue)
-				log.Println("Started Worker", worker.id)
-				color.Unset()
-			case data := <-WorkerSleeping:
-				color.Set(color.Faint)
-				for worker, interval := range data {
-					log.Println("Worker", worker.id, "sleeping for", interval, "seconds")
-				}
-				color.Unset()
-			case task := <-TaskScheduled:
-				color.Set(color.Bold, color.FgYellow)
-				log.Println("Task", task.id, "scheduled to run at", task.nextRun.Format(time.UnixDate))
-				color.Unset()
-			case task := <-TaskDequeued:
-				color.Set(color.Bold, color.FgRed)
-				log.Println("Task", task.id, "dequeued")
-				color.Unset()
-			case data := <-TaskStarted:
-				color.Set(color.Bold)
-				for worker, task := range data {
-					log.Println("Worker", worker.id, "picked up task", task.id)
-				}
-				color.Unset()
-			case data := <-TaskFinished:
-				color.Set(color.Bold, color.FgGreen)
-				for worker, task := range data {
-					log.Println("Worker", worker.id, "finished task", task.id)
-				}
-				color.Unset()
+	for {
+		select {
+		case worker := <-WorkerStarted:
+			color.Set(color.Bold, color.FgBlue)
+			log.Println("Started Worker", worker.id)
+			color.Unset()
+		case worker := <-WorkerSleeping:
+			color.Set(color.Faint)
+			log.Println("Worker", worker.id, "sleeping for", AppConfig.WorkInterval, "seconds")
+			color.Unset()
+		case task := <-TaskScheduled:
+			color.Set(color.Bold, color.FgYellow)
+			log.Println("Task", task.id, "scheduled to run at", task.nextRun.Format(time.UnixDate))
+			color.Unset()
+		case task := <-TaskDequeued:
+			color.Set(color.Bold, color.FgRed)
+			log.Println("Task", task.id, "dequeued")
+			color.Unset()
+		case data := <-TaskStarted:
+			color.Set(color.Bold)
+			for worker, task := range data {
+				log.Println("Worker", worker.id, "picked up task", task.id)
 			}
+			color.Unset()
+		case data := <-TaskFinished:
+			color.Set(color.Bold, color.FgGreen)
+			for worker, task := range data {
+				log.Println("Worker", worker.id, "finished task", task.id)
+			}
+			color.Unset()
 		}
-	}()
+	}
 }
 
 // LogWorkerStarted sends a signal to the WorkerStarted channel triggering the
@@ -69,8 +65,8 @@ func LogWorkerStarted(w *Worker) {
 
 // LogWorkerSleeping sends a signal to the WorkerSleeping channel triggering the
 // output text.
-func LogWorkerSleeping(w *Worker, interval int) {
-	WorkerSleeping <- map[*Worker]int{w: interval}
+func LogWorkerSleeping(w *Worker) {
+	WorkerSleeping <- w
 }
 
 // LogTaskScheduled sends a signal to the TaskScheduled channel triggering the
