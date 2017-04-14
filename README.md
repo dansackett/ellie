@@ -7,7 +7,7 @@ A distributed task queue written in Go.
 Grab the project for your own project using `go get`:
 
 ```
-$ go get github.com/OrlandoGolang/ellie
+$ go get github.com/dansackett/ellie
 ```
 
 ## Examples
@@ -18,7 +18,7 @@ package main
 import (
 	"time"
 
-	"github.com/OrlandoGolang/ellie"
+	"github.com/dansackett/ellie"
 )
 
 func Sum(x, y int) int {
